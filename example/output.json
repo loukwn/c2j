@@ -1,0 +1,20 @@
+[
+    {
+        "store_name": "starbucks",
+        "food_types": [
+            "coffee",
+            "studying",
+            "sweets"
+        ],
+        "category": "drinks"
+    },
+    {
+        "store_name": "mcdonalds",
+        "food_types": [
+            "burgers",
+            "fries",
+            "ice cream"
+        ],
+        "category": "eating"
+    }
+]
