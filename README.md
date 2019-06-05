@@ -5,7 +5,7 @@ It provides the ability to customize the delimiter of the input csv file, as wel
 
 ## Usage
 
-Just downnload the python script and run it like this:
+Just download the python script and run it like this:
 
 ```
 python c2j.py -i <csv_file> -o <json_file> [-d <delimiter>] [-m <file_with_column_mapping_logic]
