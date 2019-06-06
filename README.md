@@ -10,7 +10,7 @@ Two variables are exposed for the transformation: ```value``` , that represents 
 Just download the python script and run it like this:
 
 ```
-python c2j.py -i <csv_file> -o <json_file> [-d <delimiter>] [-m <file_with_column_mapping_logic]
+python3 c2j.py -i <csv_file> [-o <json_file>] [-d <delimiter>] [-m <file_with_column_mapping_logic>]
 ```
 
 ## License
