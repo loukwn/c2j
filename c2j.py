@@ -18,36 +18,39 @@ def main(args):
         with open(args.map, 'r') as f:
             map_file = json.load(f)
 
+    header = args.header
+    if args.header is None:
+        header = False
+
     data = []
-    column_names = []
-    is_header = True
+    keys = []
     index = 0
 
     with open(args.input, 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=delimiter)
         for row in csv_reader:
-            if is_header:
-                is_header = False
-                column_names = row
+            if header:
+                header = False;
+                keys = row
                 continue
 
             data_object = {}
-            for i in range(0, len(column_names)):
-                column_name = column_names[i]
-                column_value = row[i].strip()
+            for i in range(0, len(keys)):
+                key = keys[i]
+                value = row[i].strip()
 
-                column_settings = map_file.get(column_name)
+                column_settings = map_file.get(key)
                 if column_settings is not None:
-                    is_ignored = column_settings.get("ignored")
-                    if is_ignored:
+                    ignore = column_settings.get("ignore")
+                    if ignore:
                         continue
-                    new_column_name = column_settings.get("new_name")
-                    if new_column_name is not None:
-                        column_name = new_column_name
-                    transformation = column_settings.get("transformation")
-                    if transformation is not None:
-                        column_value = eval(transformation, {'value': column_value, 'index': index})
-                data_object[column_name] = column_value
+                    rename = column_settings.get("rename")
+                    if rename is not None:
+                        key = rename
+                    change = column_settings.get("change")
+                    if change is not None:
+                        value = eval(change, {'value': value, 'index': index})
+                data_object[key] = value
             data.append(data_object)
             index += 1
 
@@ -61,5 +64,6 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", type=str, help="Output")
     parser.add_argument("-d", "--delimiter", type=str, help="Delimiter")
     parser.add_argument("-m", "--map", type=str, help="Map")
+    parser.add_argument("--header", action="store_true", help="Header")
     args = parser.parse_args()
     main(args)
