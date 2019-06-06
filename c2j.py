@@ -7,9 +7,6 @@ def main(args):
     if args.input is None:
         exit()
 
-    # if args.output is None:
-    #     exit()
-
     delimiter = args.delimiter
     if args.delimiter is None:
         delimiter = ','
