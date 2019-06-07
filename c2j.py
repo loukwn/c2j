@@ -77,4 +77,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--mfile", type=argparse.FileType('r'), help="Map JSON File")
     parser.add_argument("-d", "--delimiter", type=str, default=',', help="Default Delimiter is ','")
     args = parser.parse_args()
-    main(args)
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        exit()
