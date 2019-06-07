@@ -1,0 +1,12 @@
+{
+  "column_to_ignore": {
+    "ignore": true
+  },
+  "name": {
+    "rename": "store_name"
+  },
+  "tags": {
+    "rename": "food_types",
+    "change": "value.split(';')"
+  }
+}

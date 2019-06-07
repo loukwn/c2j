@@ -1,9 +1,0 @@
-{
-  "column_to_ignore":{"ignored": true},
-  "name":{"new_name":"store_name"},
-  "tags":{
-    "new_name": "food_types",
-    "transformation": "value.split(';')"
-  }
-}
-

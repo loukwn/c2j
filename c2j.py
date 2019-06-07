@@ -1,104 +1,84 @@
-import getopt
-import sys
-import json
+# MIT License
+#
+# Copyright (c) 2019 Konstantinos Lountzis
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import argparse
 import csv
-
-# defaults
-delimiter = ','
-input_file = ''
-output_file = ''
-column_mapping = {}
+import json
+import sys
 
 
-def main(argv):
-    # parse command line args
-    parse_args(argv)
+def main(args):
+    delimiter = args.delimiter
 
-    data_to_save = []
-    column_names = []
-    is_column_name_row = True
+    settings = {}
+    if args.mfile:
+        settings = json.load(args.mfile)
+
+    header = True
+
+    data = []
+    keys = []
     index = 0
 
-    # parse csv and save to JSON object
-    with open(input_file) as csvFile:
-        csv_reader = csv.reader(csvFile, delimiter=delimiter)
-        for row in csv_reader:
+    csv_reader = csv.reader(args.ifile, delimiter=delimiter)
+    for row in csv_reader:
+        if header:
+            header = False
+            keys = row
+            continue
 
-            # get column names
-            if is_column_name_row:
-                is_column_name_row = False
-                column_names = row
-                continue
+        json_object = {}
+        for i in range(0, len(keys)):
+            key = keys[i]
+            value = row[i].strip()
 
-            data_obj = {}
-            for i in range(0, len(column_names)):
-                column_name = column_names[i]
-                column_value = row[i].strip()
+            command = settings.get(key)
+            if command is not None:
+                ignore = command.get("ignore")
+                if ignore:
+                    continue
+                rename = command.get("rename")
+                if rename is not None:
+                    key = rename
+                change = command.get("change")
+                if change is not None:
+                    value = eval(change, {'value': value, 'index': index})
+            json_object[key] = value
+        data.append(json_object)
+        index += 1
 
-                column_settings = column_mapping.get(column_name)
-                if column_settings is not None:
-                    is_ignored = column_settings.get("ignored")
-                    if is_ignored:
-                        continue
-
-                    new_column_name = column_settings.get("new_name")
-                    if new_column_name is not None:
-                        column_name = new_column_name
-
-                    transformation = column_settings.get("transformation")
-                    if transformation is not None:
-                        column_value = eval(transformation, {'value': column_value, 'index': index})
-
-                data_obj[column_name] = column_value
-
-            data_to_save.append(data_obj)
-            index += 1
-
-    # save data to json
-    with open(output_file, 'w') as json_file:
-        json.dump(data_to_save, json_file, indent=4)
-
-
-def parse_args(argv):
-    global input_file, output_file, delimiter, column_mapping
-
-    try:
-        opts, args = getopt.getopt(argv, "hi:o:d:m:", ["ifile=", "ofile=", "delimiter=", "column_map="])
-    except getopt.GetoptError:
-        show_usage()
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == '-h':
-            show_usage()
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            input_file = arg
-        elif opt in ("-o", "--ofile"):
-            output_file = arg
-        elif opt in ("-d", "--delimiter"):
-            delimiter = arg
-        elif opt in ("-m", "--column_map"):
-            if arg:
-                with open(arg, 'r') as f:
-                    column_mapping = json.load(f)
-
-
-def show_usage():
-    print("Usage: \n"+
-        "python c2j.py -i <csv_file> -o <json_file> [-d <delimiter>] [-m <file_with_column_mapping_logic] \n "+
-        "\n" +
-        "Options:\n" +
-        "\t-h                    Show this screen\n" +
-        "\t-i --ifile            Set the input csv file\n" +
-        "\t-o --ofile            Set the output json file\n" +
-        "\t-d --delimiter        Set the csv delimiter (default ',')\n" +
-        "\t-m --column_map       Set the file that contains the column mapping logic\n\n")
+    json.dump(data, args.ofile, ensure_ascii=False, indent=args.indent)
+    args.ofile.write('\n')
 
 
 if __name__ == "__main__":
-    argv = sys.argv[1:]
-    if len(argv) < 4:
-        show_usage()
-        sys.exit(1)
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser(description="CSV to JSON Files Converter.", epilog="Copyright (c) 2019 Konstantinos Lountzis")
+    parser.add_argument("-i", "--ifile", type=argparse.FileType('r', encoding='UTF-8'), default=sys.stdin, help="Input CSV File")
+    parser.add_argument("-o", "--ofile", type=argparse.FileType('w', encoding='UTF-8'), default=sys.stdout, help="Output JSON File")
+    parser.add_argument("-m", "--mfile", type=argparse.FileType('r', encoding='UTF-8'), help="Map JSON File")
+    parser.add_argument("--delimiter", type=str, default=',', help="Default Delimiter is ','")
+    parser.add_argument("--indent", type=int, default=4, help="Default Indent is 4")
+    args = parser.parse_args()
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        exit()
