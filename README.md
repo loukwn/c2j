@@ -11,7 +11,7 @@ Two variables are exposed for the transformation: ```value``` , that represents 
 Just download the python script and run it like this:
 
 ```
-python3 c2j.py [-h] [-i IFILE] [-m MFILE] [-o OFILE] [-d DELIMITER]
+python3 c2j.py [-h] [-i IFILE] [-o OFILE] [-m MFILE] [--delimiter DELIMITER] [--indent INDENT]
 ```
 
 ## License
