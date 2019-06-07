@@ -1,20 +1,42 @@
+# MIT License
+#
+# Copyright (c) 2019 Konstantinos Lountzis
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import argparse
-import json
 import csv
+import json
 
 
 def main(args):
-    if args.input is None:
+    if args.ifile is None:
         exit()
 
     delimiter = args.delimiter
     if args.delimiter is None:
         delimiter = ','
 
-    map_file = {}
-    if args.map:
-        with open(args.map, 'r') as f:
-            map_file = json.load(f)
+    settings = {}
+    if args.mfile:
+        with open(args.mfile, 'r') as m_file:
+            settings = json.load(m_file)
 
     header = True
 
@@ -22,8 +44,8 @@ def main(args):
     keys = []
     index = 0
 
-    with open(args.input, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=delimiter)
+    with open(args.ifile, 'r') as i_file:
+        csv_reader = csv.reader(i_file, delimiter=delimiter)
         for row in csv_reader:
             if header:
                 header = False
@@ -35,34 +57,34 @@ def main(args):
                 key = keys[i]
                 value = row[i].strip()
 
-                settings = map_file.get(key)
-                if settings is not None:
-                    ignore = settings.get("ignore")
+                command = settings.get(key)
+                if command is not None:
+                    ignore = command.get("ignore")
                     if ignore:
                         continue
-                    rename = settings.get("rename")
+                    rename = command.get("rename")
                     if rename is not None:
                         key = rename
-                    change = settings.get("change")
+                    change = command.get("change")
                     if change is not None:
                         value = eval(change, {'value': value, 'index': index})
                 json_object[key] = value
             data.append(json_object)
             index += 1
 
-    if args.output:
-        with open(args.output, 'w') as json_file:
-            json.dump(data, json_file, indent=4)
-            json_file.write('\n')
+    if args.ofile:
+        with open(args.ofile, 'w') as o_file:
+            json.dump(data, o_file, indent=4)
+            o_file.write('\n')
     else:
         print(json.dumps(data, indent=4))
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", type=str, help="Input")
-    parser.add_argument("-o", "--output", type=str, help="Output")
-    parser.add_argument("-d", "--delimiter", type=str, help="Delimiter")
-    parser.add_argument("-m", "--map", type=str, help="Map")
+    parser = argparse.ArgumentParser(description="CSV to JSON Files Converter.", epilog="Copyright (c) 2019 Konstantinos Lountzis")
+    parser.add_argument("-i", "--ifile", required=True, type=str, help="CSV File")
+    parser.add_argument("-m", "--mfile", required=False, type=str, help="JSON File")
+    parser.add_argument("-o", "--ofile", required=False, type=str, help="JSON File")
+    parser.add_argument("-d", "--delimiter", help="Default Delimiter is ','")
     args = parser.parse_args()
     main(args)
