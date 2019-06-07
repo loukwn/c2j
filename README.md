@@ -1,4 +1,5 @@
 # c2j
+
 Just a utility python script I made to painlessly convert csv files to json ones. 
 
 It provides the ability to customize the delimiter of the input csv file, as well as change the resulting json,  by renaming, ignoring, and/or transforming (by explicitly adding code) the value of the existing csv columns (See [example](/example)).

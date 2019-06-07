@@ -23,12 +23,10 @@
 import argparse
 import csv
 import json
+import sys
 
 
 def main(args):
-    if args.ifile is None:
-        exit()
-
     delimiter = args.delimiter
     if args.delimiter is None:
         delimiter = ','
@@ -44,47 +42,42 @@ def main(args):
     keys = []
     index = 0
 
-    with open(args.ifile, 'r') as i_file:
-        csv_reader = csv.reader(i_file, delimiter=delimiter)
-        for row in csv_reader:
-            if header:
-                header = False
-                keys = row
-                continue
+    csv_reader = csv.reader(args.ifile, delimiter=delimiter)
+    for row in csv_reader:
+        if header:
+            header = False
+            keys = row
+            continue
 
-            json_object = {}
-            for i in range(0, len(keys)):
-                key = keys[i]
-                value = row[i].strip()
+        json_object = {}
+        for i in range(0, len(keys)):
+            key = keys[i]
+            value = row[i].strip()
 
-                command = settings.get(key)
-                if command is not None:
-                    ignore = command.get("ignore")
-                    if ignore:
-                        continue
-                    rename = command.get("rename")
-                    if rename is not None:
-                        key = rename
-                    change = command.get("change")
-                    if change is not None:
-                        value = eval(change, {'value': value, 'index': index})
-                json_object[key] = value
-            data.append(json_object)
-            index += 1
+            command = settings.get(key)
+            if command is not None:
+                ignore = command.get("ignore")
+                if ignore:
+                    continue
+                rename = command.get("rename")
+                if rename is not None:
+                    key = rename
+                change = command.get("change")
+                if change is not None:
+                    value = eval(change, {'value': value, 'index': index})
+            json_object[key] = value
+        data.append(json_object)
+        index += 1
 
-    if args.ofile:
-        with open(args.ofile, 'w') as o_file:
-            json.dump(data, o_file, indent=4)
-            o_file.write('\n')
-    else:
-        print(json.dumps(data, indent=4))
+    json.dump(data, args.ofile, indent=4)
+    args.ofile.write('\n')
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CSV to JSON Files Converter.", epilog="Copyright (c) 2019 Konstantinos Lountzis")
-    parser.add_argument("-i", "--ifile", required=True, type=str, help="CSV File")
-    parser.add_argument("-m", "--mfile", required=False, type=str, help="JSON File")
-    parser.add_argument("-o", "--ofile", required=False, type=str, help="JSON File")
+    parser.add_argument("-i", "--ifile", type=argparse.FileType('r'), default=sys.stdin, help="CSV File")
+    parser.add_argument("-o", "--ofile", type=argparse.FileType('w'), default=sys.stdout, help="JSON File")
+    parser.add_argument("-m", "--mfile", type=str, help="JSON File")
     parser.add_argument("-d", "--delimiter", help="Default Delimiter is ','")
     args = parser.parse_args()
     main(args)
