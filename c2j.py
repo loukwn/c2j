@@ -66,15 +66,15 @@ def main(args):
         data.append(json_object)
         index += 1
 
-    json.dump(data, args.ofile, indent=args.indent)
+    json.dump(data, args.ofile, ensure_ascii=False, indent=args.indent)
     args.ofile.write('\n')
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CSV to JSON Files Converter.", epilog="Copyright (c) 2019 Konstantinos Lountzis")
-    parser.add_argument("-i", "--ifile", type=argparse.FileType('r'), default=sys.stdin, help="Input CSV File")
-    parser.add_argument("-o", "--ofile", type=argparse.FileType('w'), default=sys.stdout, help="Output JSON File")
-    parser.add_argument("-m", "--mfile", type=argparse.FileType('r'), help="Map JSON File")
+    parser.add_argument("-i", "--ifile", type=argparse.FileType('r', encoding='UTF-8'), default=sys.stdin, help="Input CSV File")
+    parser.add_argument("-o", "--ofile", type=argparse.FileType('w', encoding='UTF-8'), default=sys.stdout, help="Output JSON File")
+    parser.add_argument("-m", "--mfile", type=argparse.FileType('r', encoding='UTF-8'), help="Map JSON File")
     parser.add_argument("--delimiter", type=str, default=',', help="Default Delimiter is ','")
     parser.add_argument("--indent", type=int, default=4, help="Default Indent is 4")
     args = parser.parse_args()
