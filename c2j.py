@@ -28,13 +28,10 @@ import sys
 
 def main(args):
     delimiter = args.delimiter
-    if args.delimiter is None:
-        delimiter = ','
 
     settings = {}
     if args.mfile:
-        with open(args.mfile, 'r') as m_file:
-            settings = json.load(m_file)
+        settings = json.load(args.mfile)
 
     header = True
 
@@ -75,9 +72,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CSV to JSON Files Converter.", epilog="Copyright (c) 2019 Konstantinos Lountzis")
-    parser.add_argument("-i", "--ifile", type=argparse.FileType('r'), default=sys.stdin, help="CSV File")
-    parser.add_argument("-o", "--ofile", type=argparse.FileType('w'), default=sys.stdout, help="JSON File")
-    parser.add_argument("-m", "--mfile", type=str, help="JSON File")
-    parser.add_argument("-d", "--delimiter", help="Default Delimiter is ','")
+    parser.add_argument("-i", "--ifile", type=argparse.FileType('r'), default=sys.stdin, help="Input CSV File")
+    parser.add_argument("-o", "--ofile", type=argparse.FileType('w'), default=sys.stdout, help="Output JSON File")
+    parser.add_argument("-m", "--mfile", type=argparse.FileType('r'), help="Map JSON File")
+    parser.add_argument("-d", "--delimiter", type=str, default=',', help="Default Delimiter is ','")
     args = parser.parse_args()
     main(args)
